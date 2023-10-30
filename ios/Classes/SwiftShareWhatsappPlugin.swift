@@ -32,13 +32,15 @@ extension SwiftShareWhatsappPlugin {
         if let dict = arguments as? [String: String?] {
             var activityItems = [Any]()
             if let text = dict["text"] as? String {
-                activityItems.append(OptionalTextActivityItemSource(text: text))
+                activityItems.append(WhatsAppActivityTextItem(text: text))
             }
             if let filePath = dict["file"] as? String {
                 let file = URL(fileURLWithPath: filePath)
-                activityItems.append(file)
+                activityItems.append(WhatsAppActivityFileItem(url: file))
+
             }
-            let activityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+
+            let activityViewController = WhatsAppActivityViewController(activityItems: activityItems, applicationActivities: [WhatsAppUIActivity(activityItems: activityItems)])
             
             if UIDevice.current.userInterfaceIdiom == .pad {
                 activityViewController.popoverPresentationController?.sourceView = UIApplication.topViewController()?.view
@@ -48,13 +50,19 @@ extension SwiftShareWhatsappPlugin {
                 }
             }
             
+            if #available(iOS 15.4, *) {
+                activityViewController.allowsProminentActivity = false
+            } else {
+                // Fallback on earlier versions
+            }
+            
             activityViewController.excludedActivityTypes = [
+                UIActivity.ActivityType.copyToPasteboard,
                 UIActivity.ActivityType.postToFacebook,
                 UIActivity.ActivityType.postToTwitter,
                 UIActivity.ActivityType.postToWeibo,
                 UIActivity.ActivityType.message,
                 UIActivity.ActivityType.print,
-                UIActivity.ActivityType.copyToPasteboard,
                 UIActivity.ActivityType.assignToContact,
                 UIActivity.ActivityType.saveToCameraRoll,
                 UIActivity.ActivityType.addToReadingList,
@@ -63,7 +71,35 @@ extension SwiftShareWhatsappPlugin {
                 UIActivity.ActivityType.postToTencentWeibo,
                 UIActivity.ActivityType.airDrop,
                 UIActivity.ActivityType.mail,
+                UIActivity.ActivityType(rawValue: "com.apple.CloudDocsUI.AddToiCloudDrive"),
+                UIActivity.ActivityType(rawValue: "com.apple.mobilenotes.SharingExtension"),
+                UIActivity.ActivityType(rawValue: "com.apple.reminders.RemindersEditorExtension"),
+                UIActivity.ActivityType(rawValue: "com.apple.mobilenotes.SharingExtension"),
+                UIActivity.ActivityType(rawValue: "com.amazon.Lassen.SendToKindleExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.chrome.ios.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.Drive.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.Gmail.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.inbox.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.hangouts.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.iwilab.KakaoTalk.Share"),
+                UIActivity.ActivityType(rawValue: "com.hammerandchisel.discord.Share"),
+                UIActivity.ActivityType(rawValue: "com.facebook.Messenger.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.nhncorp.NaverSearch.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.linkedin.LinkedIn.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.tinyspeck.chatlyio.share"), // Slack!
+                UIActivity.ActivityType(rawValue: "ph.telegra.Telegraph.Share"),
+                UIActivity.ActivityType(rawValue: "com.toyopagroup.picaboo.share"), // Snapchat!
+                UIActivity.ActivityType(rawValue: "com.fogcreek.trello.trelloshare"),
+                UIActivity.ActivityType(rawValue: "com.hammerandchisel.discord.Share"),
+                UIActivity.ActivityType(rawValue: "com.riffsy.RiffsyKeyboard.RiffsyShareExtension"), //GIF Keyboard by Tenor
+                UIActivity.ActivityType(rawValue: "com.ifttt.ifttt.share"),
+                UIActivity.ActivityType(rawValue: "com.getdropbox.Dropbox.ActionExtension"),
+                UIActivity.ActivityType(rawValue: "wefwef.YammerShare"),
+                UIActivity.ActivityType(rawValue: "pinterest.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "pinterest.ActionExtension"),
+                UIActivity.ActivityType(rawValue: "us.zoom.videomeetings.Extension"),
             ]
+
             
             DispatchQueue.main.async {
                 self.presentActivityView(activityViewController: activityViewController)
@@ -95,6 +131,10 @@ extension SwiftShareWhatsappPlugin {
     }
 }
 
+class WhatsAppActivityViewController: UIActivityViewController {
+
+}
+
 extension UIApplication {
     class func topViewController(controller: UIViewController? = UIApplication.shared.keyWindow?.rootViewController) -> UIViewController? {
         if let navigationController = controller as? UINavigationController {
@@ -119,22 +159,162 @@ class TransparentViewController: UIViewController {
     }
 }
 
-class OptionalTextActivityItemSource: NSObject, UIActivityItemSource {
-    let text: String
-    
-    init(text: String) {
+
+class WhatsAppActivityTextItem: NSObject, UIActivityItemSource {
+    var text: String?
+
+    convenience init(text: String) {
+        self.init()
         self.text = text
     }
-    
+
+    // This will be called BEFORE showing the user the apps to share (first step)
     func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-        return text
+        return self.text ?? ""
     }
-    
+
+    // This will be called AFTER the user has selected an app to share (second step)
     func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-        if activityType?.rawValue == "net.whatsapp.WhatsApp.ShareExtension" {
-            // WhatsApp doesn't support both image and text, so return nil and thus only sharing an image.
-            return nil
-        }
-        return text
+      var text = ""
+      if activityType?.rawValue == "net.whatsapp.WhatsApp.ShareExtension" {
+          text = self.text ?? ""
+      }
+      return text
     }
 }
+
+class WhatsAppActivityFileItem: NSObject, UIActivityItemSource {
+    var url: URL?
+
+    convenience init(url: URL?) {
+        self.init()
+    
+        self.url = url
+    }
+
+    // This will be called BEFORE showing the user the apps to share (first step)
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        return url
+    }
+
+    // This will be called AFTER the user has selected an app to share (second step)
+    func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+        switch activityType {
+        case UIActivity.ActivityType(rawValue: "net.whatsapp.WhatsApp.ShareExtension"),
+            UIActivity.ActivityType.copyToPasteboard:
+            return url
+        default:
+            return nil
+
+        }
+    }
+}
+
+class WhatsAppActivityImageItem: NSObject, UIActivityItemSource {
+    var image: UIImage!
+
+
+    convenience init(image: UIImage) {
+        self.init()
+        self.image = image
+
+    }
+
+    // This will be called BEFORE showing the user the apps to share (first step)
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        return image as Any
+    }
+
+    // This will be called AFTER the user has selected an app to share (second step)
+    func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+        switch activityType {
+        case UIActivity.ActivityType(rawValue: "net.whatsapp.WhatsApp.ShareExtension"):
+            return image
+        default:
+            return nil
+
+        }
+    }
+}
+
+@objc(WhatsAppUIActivity)
+class WhatsAppUIActivity: UIActivity {
+    var activityItems : [Any] = []
+    
+    convenience init(activityItems: [Any]) {
+        self.init()
+        self.textToShare = ""
+        self.activityItems = activityItems
+    }
+    
+    var textToShare: String?
+
+    override class var activityCategory: UIActivity.Category {
+        return .share
+    }
+
+    override var activityType: UIActivity.ActivityType? {
+        return .whatsappuiactivity
+    }
+
+    override var activityTitle: String? {
+        return "WhatsApp"
+    }
+
+    override var activityImage: UIImage? {
+        return UIImage(named: "ic_whatsapp")
+    }
+
+    override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
+        for activityItem in self.activityItems
+        {
+            if ((activityItem as AnyObject).isKind(of: WhatsAppActivityTextItem.self))
+            {
+                self.textToShare = (activityItem as! WhatsAppActivityTextItem).text;
+                let whatsAppURL : URL = self.getURLFromMessage(message: self.textToShare!)
+                return UIApplication.shared.canOpenURL(whatsAppURL)
+            }
+        }
+        return true;
+    }
+    
+    func getURLFromMessage(message:String) -> URL
+     {
+         var url = "whatsapp://"
+         var sendMessage = message
+         if (sendMessage != "")
+         {
+             sendMessage = sendMessage.addingPercentEncoding(withAllowedCharacters: (NSCharacterSet.urlQueryAllowed)) ?? ""
+             url = "\(url)send?text=\(sendMessage)"
+         }
+         return URL(string: url)!
+     }
+
+
+    override func prepare(withActivityItems activityItems: [Any]) {
+        for activityItem in self.activityItems{
+            if ((activityItem as AnyObject).isKind(of: WhatsAppActivityTextItem.self))
+            {
+                let message = (activityItem as! WhatsAppActivityTextItem).text ?? ""
+                let whatsAppURL : URL = self.getURLFromMessage(message: message)
+                if(UIApplication.shared.canOpenURL(whatsAppURL)){
+                    UIApplication.shared.open(whatsAppURL)
+                }
+                break;
+            }
+        }
+        
+
+    }
+
+    override func perform() {
+        activityDidFinish(true)
+    }
+}
+
+extension UIActivity.ActivityType {
+    static let whatsappuiactivity =
+        UIActivity.ActivityType("net.whatsapp.WhatsApp.ShareExtension")
+
+}
+
