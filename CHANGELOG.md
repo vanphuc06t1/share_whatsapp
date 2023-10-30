@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Fix only show WhatsApp in share activity view for iOS
+
 ## 1.0.2
 
 * Fix implementations

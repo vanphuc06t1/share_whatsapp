@@ -63,6 +63,33 @@ extension SwiftShareWhatsappPlugin {
                 UIActivity.ActivityType.postToTencentWeibo,
                 UIActivity.ActivityType.airDrop,
                 UIActivity.ActivityType.mail,
+                UIActivity.ActivityType(rawValue: "com.apple.CloudDocsUI.AddToiCloudDrive"),
+                UIActivity.ActivityType(rawValue: "com.apple.mobilenotes.SharingExtension"),
+                UIActivity.ActivityType(rawValue: "com.apple.reminders.RemindersEditorExtension"),
+                UIActivity.ActivityType(rawValue: "com.apple.mobilenotes.SharingExtension"),
+                UIActivity.ActivityType(rawValue: "com.amazon.Lassen.SendToKindleExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.chrome.ios.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.Drive.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.Gmail.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.inbox.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.google.hangouts.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.iwilab.KakaoTalk.Share"),
+                UIActivity.ActivityType(rawValue: "com.hammerandchisel.discord.Share"),
+                UIActivity.ActivityType(rawValue: "com.facebook.Messenger.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.nhncorp.NaverSearch.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.linkedin.LinkedIn.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "com.tinyspeck.chatlyio.share"), // Slack!
+                UIActivity.ActivityType(rawValue: "ph.telegra.Telegraph.Share"),
+                UIActivity.ActivityType(rawValue: "com.toyopagroup.picaboo.share"), // Snapchat!
+                UIActivity.ActivityType(rawValue: "com.fogcreek.trello.trelloshare"),
+                UIActivity.ActivityType(rawValue: "com.hammerandchisel.discord.Share"),
+                UIActivity.ActivityType(rawValue: "com.riffsy.RiffsyKeyboard.RiffsyShareExtension"), //GIF Keyboard by Tenor
+                UIActivity.ActivityType(rawValue: "com.ifttt.ifttt.share"),
+                UIActivity.ActivityType(rawValue: "com.getdropbox.Dropbox.ActionExtension"),
+                UIActivity.ActivityType(rawValue: "wefwef.YammerShare"),
+                UIActivity.ActivityType(rawValue: "pinterest.ShareExtension"),
+                UIActivity.ActivityType(rawValue: "pinterest.ActionExtension"),
+                UIActivity.ActivityType(rawValue: "us.zoom.videomeetings.Extension"),
             ]
             
             DispatchQueue.main.async {
