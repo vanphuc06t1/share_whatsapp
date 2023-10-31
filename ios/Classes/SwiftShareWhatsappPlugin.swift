@@ -170,16 +170,15 @@ class WhatsAppActivityTextItem: NSObject, UIActivityItemSource {
 
     // This will be called BEFORE showing the user the apps to share (first step)
     func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-        return self.text ?? ""
+        return UIImage(contentsOfFile: self.text ?? "")
     }
 
     // This will be called AFTER the user has selected an app to share (second step)
     func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-      var text = ""
       if activityType?.rawValue == "net.whatsapp.WhatsApp.ShareExtension" {
-          text = self.text ?? ""
+          return nil
       }
-      return text
+        return self.text ?? ""
     }
 }
 
@@ -194,20 +193,21 @@ class WhatsAppActivityFileItem: NSObject, UIActivityItemSource {
 
     // This will be called BEFORE showing the user the apps to share (first step)
     func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-        return url
+        //return url
+        return UIImage(contentsOfFile: url?.absoluteString ?? "")
     }
 
     // This will be called AFTER the user has selected an app to share (second step)
     func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
         switch activityType {
-        case UIActivity.ActivityType(rawValue: "net.whatsapp.WhatsApp.ShareExtension"),
-            UIActivity.ActivityType.copyToPasteboard:
-            return url
-        default:
+        case UIActivity.ActivityType(rawValue: "net.whatsapp.WhatsApp.ShareExtension"):
             return nil
-
+        default:
+            return url
         }
+
     }
+    
 }
 
 class WhatsAppActivityImageItem: NSObject, UIActivityItemSource {
@@ -274,8 +274,12 @@ class WhatsAppUIActivity: UIActivity {
                 let whatsAppURL : URL = self.getURLFromMessage(message: self.textToShare!)
                 return UIApplication.shared.canOpenURL(whatsAppURL)
             }
+            if ((activityItem as AnyObject).isKind(of: WhatsAppActivityFileItem.self))
+            {
+                UIApplication.shared.canOpenURL(URL(string: "whatsapp://app")! )
+            }
         }
-        return true;
+        return UIApplication.shared.canOpenURL(URL(string: "whatsapp://app")! );
     }
     
     func getURLFromMessage(message:String) -> URL
@@ -299,6 +303,13 @@ class WhatsAppUIActivity: UIActivity {
                 let whatsAppURL : URL = self.getURLFromMessage(message: message)
                 if(UIApplication.shared.canOpenURL(whatsAppURL)){
                     UIApplication.shared.open(whatsAppURL)
+                }
+                break;
+            }
+            if ((activityItem as AnyObject).isKind(of: WhatsAppActivityFileItem.self))
+            {
+                if(UIApplication.shared.canOpenURL(URL(string: "whatsapp://app")! )){
+                    UIApplication.shared.open(URL(string: "whatsapp://app")!)
                 }
                 break;
             }
