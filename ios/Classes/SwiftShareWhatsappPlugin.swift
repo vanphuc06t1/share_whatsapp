@@ -280,9 +280,15 @@ class WhatsAppUIActivity: UIActivity {
             if ((activityItem as AnyObject).isKind(of: WhatsAppActivityFileItem.self))
             {
                 UIApplication.shared.canOpenURL(URL(string: "whatsapp://app")! )
+                let filePaths = "\((activityItem as! WhatsAppActivityFileItem).url?.path ?? "")"
+                let wppURLWithFilePaths = URL(string: "whatsapp://send?file='\(filePaths)'")!
+                
+                if(UIApplication.shared.canOpenURL(wppURLWithFilePaths)){
+                    return true
+                }
             }
         }
-        return UIApplication.shared.canOpenURL(URL(string: "whatsapp://app")! );
+        return UIApplication.shared.canOpenURL(URL(string: "whatsapp://app")! )
     }
     
     func getURLFromMessage(message:String) -> URL
@@ -307,14 +313,18 @@ class WhatsAppUIActivity: UIActivity {
                 if(UIApplication.shared.canOpenURL(whatsAppURL)){
                     UIApplication.shared.open(whatsAppURL)
                 }
-                break;
+                break
             }
             if ((activityItem as AnyObject).isKind(of: WhatsAppActivityFileItem.self))
             {
-                if(UIApplication.shared.canOpenURL(URL(string: "whatsapp://app")! )){
-                    UIApplication.shared.open(URL(string: "whatsapp://app")!)
+                let filePaths = "\((activityItem as! WhatsAppActivityFileItem).url?.path ?? "")"
+                //let wppURLWithFilePaths = URL(string: "whatsapp://send?file='\(filePaths)'")!
+                let wppURLWithFilePaths = URL(string: "whatsapp://send?file='\(filePaths)'")!
+                
+                if(UIApplication.shared.canOpenURL(wppURLWithFilePaths)){
+                    UIApplication.shared.open(wppURLWithFilePaths)
                 }
-                break;
+                break
             }
         }
         
@@ -323,6 +333,16 @@ class WhatsAppUIActivity: UIActivity {
 
     override func perform() {
         activityDidFinish(true)
+        for activityItem in self.activityItems{
+            if ((activityItem as AnyObject).isKind(of: WhatsAppActivityFileItem.self))
+            {
+                let filePaths = "\((activityItem as! WhatsAppActivityFileItem).url?.path ?? "")"
+                //let wppURLWithFilePaths = URL(string: "whatsapp://send?file='\(filePaths)'")!
+                let wppURLWithFilePaths = URL(string: "whatsapp://send?file='\(filePaths)'")!
+                UIApplication.shared.open(wppURLWithFilePaths)
+                break;
+            }
+        }
     }
 }
 
