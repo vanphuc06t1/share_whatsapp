@@ -262,8 +262,11 @@ class WhatsAppUIActivity: UIActivity {
     }
 
     override var activityImage: UIImage? {
-        return UIImage(named: "ic_whatsapp")
+        return UIImage(named: "ic_whatsapp",
+                            in: Bundle(for: type(of:self)),
+                            compatibleWith: nil)
     }
+    
 
     override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
         for activityItem in self.activityItems

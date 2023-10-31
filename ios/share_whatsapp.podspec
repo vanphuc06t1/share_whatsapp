@@ -14,6 +14,7 @@ A Flutter plugin to share content from your Flutter app to the WhatsApp share di
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
+  s.resources = 'Assets/*.png'
   s.dependency 'Flutter'
   s.platform = :ios, '9.0'
 
